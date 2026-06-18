@@ -1,0 +1,2 @@
+# Problem Statement
+Large amounts of edible food are wasted daily by restaurants, bakeries, hotels and events while many individuals and communities face food scarcity. The lack of an official platform to connect food donors with recipients results in unnecessary food waste and missed opportunities to support those in need. FoodBridge aims to solve this problem by providing a centralized platform for surplus food redistribution.
