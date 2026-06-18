@@ -1,0 +1,11 @@
+# Funtional Requirements
+- FR1: User Registration
+- FR2: User Login
+- FR3: Create Food Listing
+- FR4: Update Food Listing
+- FR5: Delete Food Listing
+- FR6: Search Food Listings
+- FR7: Submit Food Request
+- FR8: Approve Food Request
+- FR9: Manage Users
+- FR10: View Dashboard
