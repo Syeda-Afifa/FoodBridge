@@ -1,29 +1,29 @@
 # Stakeholder Analysis 
 ## Food Donors
-#Examples:
+# Examples:
 - Restaurants,
 - Bakeries,
 - Event Organizers,
 - Hotels
 
-#Needs:
+# Needs:
 - Easy food listing,
 - Quick donation process,
 - Reliable recipients
 
 ## Food Recipients
-#Examples:
+# Examples:
 - NGOs,
 - Community groups,
 - Individuals
 
-#Needs:
+# Needs:
 - Search available food,
 - Request Donations,
 - Track request status
 
 ## Admin
-Needs:
+# Needs:
 - Manage Users,
 - Monitor listings,
 - Ensure Platform safety
