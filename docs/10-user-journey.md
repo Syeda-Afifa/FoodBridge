@@ -8,7 +8,7 @@
 - Food Collected
 
 ## Recipient Journey
-# Register
+# Register:
 - Login
 - Search Food
 - Request Food
