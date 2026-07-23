@@ -1,0 +1,50 @@
+/*
+  Global baseline only. Component styling lives in the ui/ primitives and in
+  inline style objects next to the components that use them — the same
+  approach the Smart Todo reference project takes, which keeps every
+  component self-contained and avoids a global stylesheet that everything
+  fights over.
+
+  The palette is defined once here as custom properties so a colour change
+  is a one-line edit.
+*/
+
+:root {
+  --fb-green: #16a34a;
+  --fb-green-dark: #15803d;
+  --fb-green-light: #dcfce7;
+  --fb-amber: #d97706;
+  --fb-amber-light: #fef3c7;
+  --fb-red: #dc2626;
+  --fb-red-light: #fee2e2;
+  --fb-slate: #475569;
+  --fb-slate-light: #f1f5f9;
+  --fb-border: #e2e8f0;
+  --fb-text: #0f172a;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--fb-text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fb-slate-light);
+  min-height: 100vh;
+}
+
+/* Keyboard users must be able to see where they are. */
+:focus-visible {
+  outline: 2px solid var(--fb-green);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
