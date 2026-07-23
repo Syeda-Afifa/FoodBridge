@@ -1,0 +1,1037 @@
+{
+  "info": {
+    "name": "FoodBridge API",
+    "description": "FoodBridge — CSE309 Software Engineering.\n\nA REST API built with FastAPI. Every functional requirement from docs/13-functional-requirements.md has an endpoint here.\n\nHOW TO USE\n1. Start the backend:  python -m uvicorn app.main:app --reload\n2. Open '2. Authentication' > 'Login (donor)' and press Send.\n   The token is captured automatically — you do not paste it anywhere.\n3. Every other request is now authorised. Run them in order.\n\nVARIABLES\n  base_url      http://127.0.0.1:8000\n  access_token  set automatically by any Login request\n  listing_id    set automatically by 'Create listing'\n  request_id    set automatically by 'Submit request'\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "listing_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "request_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": []
+            },
+            "description": "Confirms the API is running. No token needed."
+          },
+          "response": []
+        },
+        {
+          "name": "OpenAPI docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/docs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "docs"
+              ]
+            },
+            "description": "The interactive documentation FastAPI generates from the code itself."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication (FR1, FR2)",
+      "item": [
+        {
+          "name": "Register a new user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "FR1 — User Registration.\n\nCreates an account and returns a JWT immediately, so the user is signed in without a second round trip. The password is hashed with bcrypt before storage; the plain text is never written anywhere.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Restaurant\",\n  \"email\": \"test.restaurant@foodbridge.org\",\n  \"password\": \"Testing123\",\n  \"role\": \"DONOR\",\n  \"phone\": \"01700000000\",\n  \"organization\": \"Test Restaurant Ltd\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the access token so every other request can use it automatically.",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access_token);",
+                  "    pm.collectionVariables.set('user_id', data.user_id);",
+                  "    console.log('Signed in as ' + data.email + ' (' + data.role + ')');",
+                  "}",
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (donor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "FR2 — User Login.\n\nRUN THIS FIRST. The test script saves the returned token into the collection variable {{access_token}}, which the collection-level Bearer auth then attaches to every other request.\n\nNote the deliberate design choice: an unknown email and a wrong password return the identical 401 message, so an attacker cannot use this endpoint to discover which addresses are registered.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"donor@foodbridge.org\",\n  \"password\": \"Donor123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the access token so every other request can use it automatically.",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access_token);",
+                  "    pm.collectionVariables.set('user_id', data.user_id);",
+                  "    console.log('Signed in as ' + data.email + ' (' + data.role + ')');",
+                  "}",
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (recipient)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Sign in as a recipient instead. Use this before running the 'Submit request' call, since only recipients may request food.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"recipient@foodbridge.org\",\n  \"password\": \"Recipient123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the access token so every other request can use it automatically.",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access_token);",
+                  "    pm.collectionVariables.set('user_id', data.user_id);",
+                  "    console.log('Signed in as ' + data.email + ' (' + data.role + ')');",
+                  "}",
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Sign in as the administrator. Required for anything in folder 6.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@foodbridge.org\",\n  \"password\": \"Admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the access token so every other request can use it automatically.",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access_token);",
+                  "    pm.collectionVariables.set('user_id', data.user_id);",
+                  "    console.log('Signed in as ' + data.email + ' (' + data.role + ')');",
+                  "}",
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — wrong password (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Demonstrates the failure path. Expect 401 Unauthorized with the same generic message as an unknown email.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"donor@foodbridge.org\",\n  \"password\": \"wrongpassword\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Who am I",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Returns the signed-in user. The id is read from the JWT, never from the request, so this can only ever describe the caller."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh access token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Exchanges the httpOnly refresh cookie for a new short-lived access token. The frontend calls this silently when a request comes back 401."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes the refresh token server-side and clears the cookie."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. My profile (FR11)",
+      "item": [
+        {
+          "name": "Update my details",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "FR11 — Manage Own Profile.\n\nOnly name, phone, and organization are accepted. Role and email are absent from the schema on purpose: if role were editable here, any user could promote themselves to ADMIN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nadia's Kitchen\",\n  \"phone\": \"01711111111\",\n  \"organization\": \"Nadia's Kitchen, Dhanmondi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change my password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me",
+                "password"
+              ]
+            },
+            "description": "FR11 — Change Password.\n\nThe current password is required even though the caller is already authenticated, so a hijacked session cannot lock the owner out. On success every refresh token for the user is revoked, signing out all other devices. Returns 204 No Content.\n\nWARNING: this really does change the password. Re-run scripts/seed.py to reset the demo accounts.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"Donor123\",\n  \"new_password\": \"Donor456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Food listings (FR3-FR6)",
+      "item": [
+        {
+          "name": "Browse all listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/food",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food"
+              ]
+            },
+            "description": "FR6 — Search Food Listings.\n\nExpired listings are hidden by default, since food past its collection window should not be offered."
+          },
+          "response": []
+        },
+        {
+          "name": "Search listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/food?search=rice&food_type=COOKED&status=AVAILABLE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "rice"
+                },
+                {
+                  "key": "food_type",
+                  "value": "COOKED"
+                },
+                {
+                  "key": "status",
+                  "value": "AVAILABLE"
+                }
+              ]
+            },
+            "description": "FR6 with filters. Free-text search runs across title, description, and pickup address; food_type and status narrow it further."
+          },
+          "response": []
+        },
+        {
+          "name": "My own listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/food/mine",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food",
+                "mine"
+              ]
+            },
+            "description": "A donor's own listings, including reserved and expired ones, which the public browse endpoint filters out."
+          },
+          "response": []
+        },
+        {
+          "name": "Create listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/food",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food"
+              ]
+            },
+            "description": "FR3 — Create Food Listing.\n\nRequires a DONOR or ADMIN token. The donor_id is taken from the JWT, so a listing can never be created on someone else's behalf.\n\nThe test script saves the new id into {{listing_id}} for the next calls.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Vegetable biryani, 20 portions\",\n  \"description\": \"Prepared for an event that finished early. Kept hot.\",\n  \"quantity\": \"20 portions\",\n  \"food_type\": \"COOKED\",\n  \"pickup_address\": \"House 7, Road 11, Banani\",\n  \"expiry_date\": \"2026-12-31T18:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('listing_id', pm.response.json().id);",
+                  "}",
+                  "pm.test('Listing created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get one listing",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/food/{{listing_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food",
+                "{{listing_id}}"
+              ]
+            },
+            "description": "Fetch a single listing by id, using the id saved by the previous call."
+          },
+          "response": []
+        },
+        {
+          "name": "Update listing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/food/{{listing_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food",
+                "{{listing_id}}"
+              ]
+            },
+            "description": "FR4 — Update Food Listing.\n\nOnly the owner may edit. Any other user receives 403 Forbidden. Fields omitted from the body keep their current values.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": \"15 portions\",\n  \"description\": \"Some already collected.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete listing",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/food/{{listing_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food",
+                "{{listing_id}}"
+              ]
+            },
+            "description": "FR5 — Delete Food Listing. Owner only. Returns 204 No Content.\n\nRun this last, or the request calls below will have nothing to point at."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Requests (FR7, FR8)",
+      "item": [
+        {
+          "name": "Submit request (recipient)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "requests"
+              ]
+            },
+            "description": "FR7 — Submit Food Request.\n\nSign in as a recipient first. The service rejects a donor requesting their own listing, a duplicate pending request, and any listing that is expired or already reserved.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"listing_id\": \"{{listing_id}}\",\n  \"message\": \"We can collect this evening. Shelter serves 40 people.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('request_id', pm.response.json().id);",
+                  "}",
+                  "pm.test('Request created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Requests I sent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/requests?box=sent",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "box",
+                  "value": "sent"
+                }
+              ]
+            },
+            "description": "A recipient's own submissions."
+          },
+          "response": []
+        },
+        {
+          "name": "Requests received",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/requests?box=received",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "box",
+                  "value": "received"
+                }
+              ]
+            },
+            "description": "A donor's incoming requests. Same URL as above — the box query parameter selects which side of the conversation to return."
+          },
+          "response": []
+        },
+        {
+          "name": "Approve request (donor)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/requests/{{request_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                "{{request_id}}"
+              ]
+            },
+            "description": "FR8 — Approve Food Request. The core business rule of the project.\n\nApproving one request does three things in a single operation:\n  1. that request becomes APPROVED\n  2. the listing moves to RESERVED\n  3. every other pending request on that listing is auto-REJECTED\n\nThe third step is what stops two organisations travelling for the same meal. Sign in as the donor who owns the listing before running this.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Decline request (donor)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/requests/{{request_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                "{{request_id}}"
+              ]
+            },
+            "description": "The other branch: declining leaves the listing AVAILABLE so other recipients can still request it.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"REJECTED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Admin (FR9)",
+      "item": [
+        {
+          "name": "List all users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users"
+              ]
+            },
+            "description": "FR9 — Manage Users. Admin only.\n\nGuarded by the require_admin dependency, which inspects the role claim inside the JWT. A donor or recipient token receives 403 Forbidden — try it and see."
+          },
+          "response": []
+        },
+        {
+          "name": "Suspend a user",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/users/{{user_id}}/status?is_active=false",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users",
+                "{{user_id}}",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "is_active",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "Admin only. Setting is_active=false blocks that account from signing in and deletes its refresh tokens, ending any live session immediately. Nothing the user posted is deleted.\n\nPaste a real user id from 'List all users' into the URL."
+          },
+          "response": []
+        },
+        {
+          "name": "Restore a user",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/users/{{user_id}}/status?is_active=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users",
+                "{{user_id}}",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "is_active",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Reverses the suspension."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Notifications (FR10)",
+      "item": [
+        {
+          "name": "My notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ]
+            },
+            "description": "Notifications are written by the request service whenever a request is submitted, approved, or declined."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark as read",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/{{notification_id}}/read",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "{{notification_id}}",
+                "read"
+              ]
+            },
+            "description": "Paste a real notification id into the URL."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Error cases worth showing",
+      "item": [
+        {
+          "name": "No token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/food",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food"
+              ]
+            },
+            "description": "Remove the Authorization header (Authorization tab > No Auth) and send. Every data endpoint is protected, so this returns 401 Unauthorized."
+          },
+          "response": []
+        },
+        {
+          "name": "Admin route with a donor token (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users"
+              ]
+            },
+            "description": "Sign in as the donor, then send this. Returns 403 Forbidden.\n\nThis is the point worth making in a viva: hiding the Administration link in the React menu is convenience, not security. The real boundary is here, on the server, and it holds even when the browser is bypassed entirely."
+          },
+          "response": []
+        },
+        {
+          "name": "Validation error (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/food",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "food"
+              ]
+            },
+            "description": "A title shorter than 3 characters violates the Pydantic schema, so FastAPI rejects the request before any of my code runs and returns 422 with a field-by-field explanation.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"x\",\n  \"quantity\": \"1\",\n  \"pickup_address\": \"somewhere\",\n  \"expiry_date\": \"2026-12-31T18:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
