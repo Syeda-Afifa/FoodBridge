@@ -102,7 +102,7 @@ class FoodListingService:
         patch["updated_at"] = datetime.now(timezone.utc)
         return self.repo.update(listing_id, patch)
 
-    def delete(self, listing_id: str, user_id: str) -> None:
+    def delete(self, listing_id: str, user_id: str, user_role: str = "DONOR") -> None:
         """
         FR5 — Delete Food Listing.
 
@@ -111,7 +111,8 @@ class FoodListingService:
         instead, which keeps the audit trail intact.
         """
         listing = self.get_or_404(listing_id)
-        self._assert_owner(listing, user_id)
+        if user_role != "ADMIN":
+            self._assert_owner(listing, user_id)
 
         approved = [
             r for r in self.requests.list_by_listing(listing_id)

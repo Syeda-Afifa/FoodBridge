@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, status
 
-from ..core.jwt import get_current_user_id
+from ..core.jwt import get_current_user_id, get_current_user_role, require_role
 from ..models.food_listing import FoodType, ListingStatus
 from ..schemas.food_listing import ListingCreate, ListingResponse, ListingUpdate
 from .dependencies import listing_service
@@ -42,8 +42,8 @@ def get_food(listing_id: str, _: str = Depends(get_current_user_id)):
 
 
 @router.post("/food", response_model=ListingResponse, status_code=status.HTTP_201_CREATED)
-def create_food(payload: ListingCreate, user_id: str = Depends(get_current_user_id)):
-    """FR3 — Create Food Listing."""
+def create_food(payload: ListingCreate, user_id: str = Depends(require_role("DONOR"))):
+    """FR3 — Create Food Listing. Donors only."""
     listing = listing_service.create(user_id, payload.model_dump())
     return listing_service.to_response(listing)
 
@@ -67,7 +67,11 @@ def update_food(
 
 
 @router.delete("/food/{listing_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_food(listing_id: str, user_id: str = Depends(get_current_user_id)):
-    """FR5 — Delete Food Listing."""
-    listing_service.delete(listing_id, user_id)
+def delete_food(
+    listing_id: str,
+    user_id: str = Depends(get_current_user_id),
+    user_role: str = Depends(get_current_user_role),
+):
+    """FR5 — Delete Food Listing. Owning donor, or any admin."""
+    listing_service.delete(listing_id, user_id, user_role)
     return None
