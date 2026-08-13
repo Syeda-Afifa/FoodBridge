@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, status
 
-from ..core.jwt import get_current_user_id
+from ..core.jwt import get_current_user_id, require_role
 from ..schemas.request import RequestCreate, RequestResponse, RequestUpdate
 from .dependencies import request_service
 
@@ -8,8 +8,8 @@ router = APIRouter()
 
 
 @router.post("/requests", response_model=RequestResponse, status_code=status.HTTP_201_CREATED)
-def create_request(payload: RequestCreate, user_id: str = Depends(get_current_user_id)):
-    """FR7 — Submit Food Request."""
+def create_request(payload: RequestCreate, user_id: str = Depends(require_role("RECIPIENT"))):
+    """FR7 — Submit Food Request. Recipients only."""
     request = request_service.create(user_id, payload.listing_id, payload.message)
     return request_service.to_response(request)
 
