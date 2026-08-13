@@ -142,3 +142,13 @@ def require_admin(claims: dict = Depends(get_current_claims)) -> str:
             detail="Admin access required",
         )
     return claims["sub"]
+def require_role(*allowed_roles: str):
+    """Route guard for endpoints limited to specific roles."""
+    def _check(claims: dict = Depends(get_current_claims)) -> str:
+        if claims.get("role") not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires role: {', '.join(allowed_roles)}",
+            )
+        return claims["sub"]
+    return _check
